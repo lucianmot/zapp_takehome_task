@@ -4,7 +4,7 @@
   "description": "Zapp take home assignment backend",
   "main": "index.ts",
   "scripts": {
-    "test": "jest --config jest.config.js",
+    "test": "jest --config jest.config.js --verbose",
     "dev": "ts-node src/index.ts"
   },
   "keywords": [],
