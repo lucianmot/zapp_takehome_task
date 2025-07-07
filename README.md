@@ -1,4 +1,45 @@
-# zapp_takehome_task# Zapp Coding Test
+## How to run locally
+
+1. **Start the backend**
+
+    ```bash
+    cd backend
+    npm install
+    npm run dev
+    ```
+
+2. **Start the frontend**
+
+    ```bash
+    cd ../frontend
+    npm install
+    npm run dev
+    ```
+
+3. **Open the app**
+
+    - Visit [http://localhost:5173](http://localhost:5173) in your browser.
+
+## How would I deploy it to GCP?
+
+**A. Cloud Run (The Fast Way):**
+- Build Docker images for the backend (and frontend, if you want to deploy it separately).
+- Push them to Google Artifact Registry.
+- Deploy to Cloud Run with a single command. It handles scaling and HTTPS, so you don’t need to think about servers.
+- Use Cloud SQL (managed Postgres) for your DB—just update your connection string and you’re good.
+- Connect your frontend to your backend’s Cloud Run URL.
+- *Honestly, this is the approach I’d recommend for almost every MVP or take-home. It’s simple and just works.*
+
+**B. GKE (The Production Way):**
+- Build the same Docker images.
+- Set up a GKE (Google Kubernetes Engine) cluster.
+- Write some Kubernetes YAML (deployments, services, ingress) for each app.
+- Use Cloud SQL as your DB, and hook up secrets/connection securely.
+- Great for complex, multi-service, or production-scale projects, but way more moving parts than Cloud Run.
+- *If you’re running something big, or want full control, GKE is the big boy pants way. But for this project? Cloud Run should be enough.*
+
+
+# Zapp Coding Test
 
 We’ve got some data in a CSV file and we want to transfer it over to a database and add validation and checks to any changes made to the data. We should be able to add/edit/delete any rows added.
 
