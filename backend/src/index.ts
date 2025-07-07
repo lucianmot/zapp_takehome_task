@@ -1,13 +1,21 @@
 import express from 'express';
 import { pool } from './db';
+import inventoryRouter from '@controllers/inventoryController';
+import ingestionRouter from '@controllers/ingestionController';
+import ingestionErrorRouter from '@controllers/ingestionErrorController';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// middleware
+// Middleware to parse JSON
 app.use(express.json());
 
-// health check
+// Register inventory router
+app.use('/api', inventoryRouter);
+app.use('/api', ingestionRouter);
+app.use('/api', ingestionErrorRouter);
+
+// Simple health check endpoint
 app.get('/health', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -17,11 +25,12 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// Example root endpoint
 app.get('/', (req, res) => {
   res.send('JustZapp backend is running!');
 });
 
-// server
+// Start the server
 app.listen(PORT, () => {
   console.log(`🚀 Backend server running at http://localhost:${PORT}`);
 });

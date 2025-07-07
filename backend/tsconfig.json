@@ -9,6 +9,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["jest", "node"],
+    "baseUrl": "./src",
+    "paths": {
+      "@repositories/*": ["repositories/*"],
+      "@services/*": ["services/*"],
+      "@validation/*": ["validation/*"],
+      "@controllers/*": ["controllers/*"],
+    }
   },
-  "include": ["src", "tests"],
+  "include": ["src", "tests"]
 }
