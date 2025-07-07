@@ -1,5 +1,6 @@
 import * as ingestionRepository from '@repositories/ingestionRepository';
 import * as inventoryService from '@services/inventoryService';
+import * as ingestionErrorRepo from '@repositories/ingestionErrorRepository';
 import * as ingestionErrorService from '@services/ingestionErrorService';
 import { inventoryRowSchema } from '@validation/inventorySchemas';
 

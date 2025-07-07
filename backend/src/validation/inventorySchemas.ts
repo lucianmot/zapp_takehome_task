@@ -7,7 +7,10 @@ export const inventoryRowSchema = z.object({
   description: z.string().nullable().optional(),
   store: z.enum(allowedStores),
   quantity: z.number().int().min(0),
-  last_upload: z.date(),
+  last_upload: z.preprocess(
+    arg => (typeof arg === "string" || arg instanceof Date) ? new Date(arg) : arg,
+    z.date()
+  ),
   ingestion_id: z.number().int().min(1)
 });
 

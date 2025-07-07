@@ -1,73 +1,91 @@
 import { Request, Response } from 'express';
-import * as ingestionErrorService from '@services/ingestionErrorService';
+import * as inventoryService from '@services/inventoryService';
 import express from 'express';
 
-// GET /api/ingestions/:id/errors
-export async function getErrorsByIngestion(req: Request, res: Response) {
+// GET /api/inventory
+export async function getAllInventory(req: Request, res: Response) {
   try {
-    const ingestionId = Number(req.params.id);
-    if (!ingestionId || ingestionId <= 0) {
-      return res.status(400).json({ error: 'Invalid ingestion id' });
-    }
-    const errors = await ingestionErrorService.getErrorsByIngestion(ingestionId);
-    res.status(200).json(errors);
+    const rows = await inventoryService.findAll();
+    res.status(200).json(rows);
   } catch (error) {
-    console.error('[getErrorsByIngestion] Error:', error);
-    res.status(500).json({ error: 'Failed to fetch errors for ingestion' });
+    console.error('[getAllInventory] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch inventory rows' });
   }
 }
 
-// PUT /api/ingestions/errors/:errorId
-export async function correctError(req: Request, res: Response) {
+// POST /api/inventory
+export async function addInventory(req: Request, res: Response) {
   try {
-    const errorId = Number(req.params.errorId);
-    const fields = req.body;
-    if (!errorId || errorId <= 0) {
-      return res.status(400).json({ error: 'Invalid error id' });
+    const newRow = req.body;
+    const result = await inventoryService.addInventory(newRow);
+    res.status(201).json(result); // 201 Created
+  } catch (error: any) {
+    // Optionally check for known errors (e.g., Zod validation, duplicate, etc.)
+    if (error.name === 'ZodError') {
+      res.status(400).json({ error: 'Validation failed', details: error.errors });
+    } else if (/already exists/i.test(error.message)) {
+      res.status(409).json({ error: error.message });
+    } else {
+      console.error('[addInventory] Error:', error);
+      res.status(500).json({ error: 'Failed to add inventory row' });
     }
-    const updated = await ingestionErrorService.correctError(errorId, fields);
+  }
+}
+
+// PUT /api/inventory/:id
+export async function updateInventory(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const fields = req.body;
+
+    // Ensure id is a positive number
+    if (!id || id <= 0) {
+      return res.status(400).json({ error: 'Invalid inventory id' });
+    }
+
+    const updated = await inventoryService.updateInventory(id, fields);
     res.status(200).json(updated);
   } catch (error: any) {
-    console.error('[correctError] Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to correct error row' });
+    if (error.name === 'ZodError') {
+      res.status(400).json({ error: 'Validation failed', details: error.errors });
+    } else if (/does not exist/i.test(error.message)) {
+      res.status(404).json({ error: error.message });
+    } else if (/Cannot update SKU or store/i.test(error.message)) {
+      res.status(400).json({ error: error.message });
+    } else {
+      console.error('[updateInventory] Error:', error);
+      res.status(500).json({ error: 'Failed to update inventory row' });
+    }
   }
 }
 
-// DELETE /api/ingestions/errors/:errorId
-export async function deleteError(req: Request, res: Response) {
+// DELETE /api/inventory/:id
+export async function deleteInventory(req: Request, res: Response) {
   try {
-    const errorId = Number(req.params.errorId);
-    if (!errorId || errorId <= 0) {
-      return res.status(400).json({ error: 'Invalid error id' });
+    const id = Number(req.params.id);
+
+    if (!id || id <= 0) {
+      return res.status(400).json({ error: 'Invalid inventory id' });
     }
-    await ingestionErrorService.deleteError(errorId);
-    res.status(204).send();
+
+    await inventoryService.deleteInventory(id);
+    res.status(204).send(); // 204 No Content on successful delete
   } catch (error: any) {
-    console.error('[deleteError] Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to delete error row' });
+    if (/does not exist/i.test(error.message)) {
+      res.status(404).json({ error: error.message });
+    } else {
+      console.error('[deleteInventory] Error:', error);
+      res.status(500).json({ error: 'Failed to delete inventory row' });
+    }
   }
 }
 
-// POST /api/ingestions/errors/:errorId/promote
-export async function promoteErrorToInventory(req: Request, res: Response) {
-  try {
-    const errorId = Number(req.params.errorId);
-    if (!errorId || errorId <= 0) {
-      return res.status(400).json({ error: 'Invalid error id' });
-    }
-    await ingestionErrorService.promoteErrorToInventory(errorId);
-    res.status(200).json({ message: 'Error row promoted to inventory.' });
-  } catch (error: any) {
-    console.error('[promoteErrorToInventory] Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to promote error row' });
-  }
-}
 
 const router = express.Router();
 
-router.get('/ingestions/:id/errors', getErrorsByIngestion);
-router.put('/ingestions/errors/:errorId', correctError);
-router.delete('/ingestions/errors/:errorId', deleteError);
-router.post('/ingestions/errors/:errorId/promote', promoteErrorToInventory);
+router.get('/inventory', getAllInventory);
+router.post('/inventory', addInventory);
+router.put('/inventory/:id', updateInventory);
+router.delete('/inventory/:id', deleteInventory);
 
 export default router;

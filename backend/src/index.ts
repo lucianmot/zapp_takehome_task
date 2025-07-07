@@ -3,12 +3,17 @@ import { pool } from './db';
 import inventoryRouter from '@controllers/inventoryController';
 import ingestionRouter from '@controllers/ingestionController';
 import ingestionErrorRouter from '@controllers/ingestionErrorController';
+import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 
 // Register inventory router
 app.use('/api', inventoryRouter);
